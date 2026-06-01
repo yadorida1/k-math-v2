@@ -1,0 +1,987 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0">
+<title>K-Math 교과수학</title>
+<style>
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   기반
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+* { box-sizing: border-box; margin: 0; padding: 0; -webkit-tap-highlight-color: transparent; }
+:root {
+  --blue: #3f4cce;
+  --purple: #7c3aed;
+  --grad: linear-gradient(135deg, var(--blue), var(--purple));
+  --bg: #e8eaf6;
+  --text: #111;
+  --sub: #888;
+  --card: #f8f9ff;
+  --border: #eee;
+  --green: #10b981;
+  --orange: #f97316;
+  --red: #ef4444;
+  --r: 16px;
+}
+html, body { height: 100%; }
+body {
+  font-family: 'Apple SD Gothic Neo', 'Noto Sans KR', 'Malgun Gothic', sans-serif;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  min-height: 100vh;
+  padding: 24px;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   폰 프레임
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.phone {
+  width: 375px;
+  height: 780px;
+  background: #fff;
+  border-radius: 44px;
+  overflow: hidden;
+  box-shadow: 0 32px 80px rgba(63,76,206,.22), 0 2px 8px rgba(0,0,0,.08);
+  display: flex;
+  flex-direction: column;
+  position: relative;
+}
+
+/* 상태바 */
+.sbar {
+  height: 44px;
+  background: #fff;
+  display: flex; align-items: flex-end; justify-content: center;
+  padding-bottom: 6px;
+  flex-shrink: 0;
+  z-index: 10;
+}
+.notch {
+  width: 100px; height: 22px;
+  background: #111;
+  border-radius: 0 0 14px 14px;
+}
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   화면 전환 시스템
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.screen-stack {
+  flex: 1;
+  position: relative;
+  overflow: hidden;
+}
+.screen {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  flex-direction: column;
+  background: #fff;
+  overflow-y: auto;
+  overflow-x: hidden;
+  scrollbar-width: none;
+  transform: translateX(100%);
+  transition: transform .32s cubic-bezier(.4,0,.2,1);
+  will-change: transform;
+}
+.screen::-webkit-scrollbar { display: none; }
+.screen.active  { transform: translateX(0); z-index: 2; }
+.screen.leaving { transform: translateX(-30%); z-index: 1; transition: transform .32s cubic-bezier(.4,0,.2,1); }
+.screen.back-enter { transform: translateX(-100%); }
+.screen.back-leave { transform: translateX(100%); }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   공통 앱 헤더
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.app-bar {
+  display: flex; align-items: center;
+  padding: 10px 16px;
+  gap: 8px;
+  flex-shrink: 0;
+  background: #fff;
+  position: sticky; top: 0; z-index: 9;
+  border-bottom: 1px solid #f3f4f6;
+}
+.app-bar-title { flex: 1; font-size: 17px; font-weight: 700; color: var(--text); text-align: center; }
+.app-bar-action { width: 36px; height: 36px; border-radius: 50%; border: none; background: none; font-size: 18px; cursor: pointer; display: flex; align-items: center; justify-content: center; }
+.back-btn { font-size: 22px; color: #333; }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   바텀 네비
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.bottom-nav {
+  display: flex;
+  border-top: 1px solid var(--border);
+  background: #fff;
+  padding: 8px 0 14px;
+  flex-shrink: 0;
+  position: relative;
+  z-index: 10;
+}
+.nav-item {
+  flex: 1; display: flex; flex-direction: column;
+  align-items: center; gap: 3px;
+  font-size: 10px; color: #bbb; font-weight: 600;
+  cursor: pointer; padding: 4px 0;
+  transition: color .15s;
+  border: none; background: none;
+}
+.nav-item.active { color: var(--blue); }
+.nav-icon { font-size: 21px; line-height: 1; }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ① 홈 화면
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.home-profile {
+  padding: 12px 20px 8px;
+  display: flex; align-items: center; gap: 10px;
+}
+.avatar {
+  width: 42px; height: 42px; border-radius: 50%;
+  background: linear-gradient(135deg, #fda085, #f6d365);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 22px; flex-shrink: 0;
+}
+.profile-name { font-size: 15px; font-weight: 700; color: var(--text); }
+.profile-grade { font-size: 12px; color: var(--sub); margin-top: 1px; cursor: pointer; }
+.notif-btn {
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--card); border: none; cursor: pointer;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; position: relative; margin-left: auto;
+}
+.notif-badge {
+  position: absolute; top: 3px; right: 3px;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--red); font-size: 9px; color: #fff;
+  display: flex; align-items: center; justify-content: center; font-weight: 700;
+}
+
+.score-card {
+  margin: 6px 20px 0;
+  background: linear-gradient(135deg, #1e3a8a 0%, #3b82f6 100%);
+  border-radius: 20px; padding: 18px 20px;
+  color: #fff; display: flex; align-items: center; gap: 18px;
+  cursor: pointer;
+}
+.score-ring {
+  width: 76px; height: 76px; border-radius: 50%; flex-shrink: 0;
+  background: conic-gradient(rgba(255,255,255,.9) 0% 72%, rgba(255,255,255,.18) 72% 100%);
+  display: flex; align-items: center; justify-content: center;
+}
+.score-ring-inner {
+  width: 58px; height: 58px; border-radius: 50%;
+  background: #1e3a8a;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.score-num { font-size: 22px; font-weight: 800; line-height: 1; }
+.score-unit { font-size: 10px; opacity: .8; }
+.score-label { font-size: 11px; opacity: .8; margin-bottom: 3px; }
+.score-rank { font-size: 22px; font-weight: 800; }
+.score-link { font-size: 11px; opacity: .75; margin-top: 4px; }
+
+.section-header {
+  padding: 14px 20px 8px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.section-header h3 { font-size: 15px; font-weight: 700; color: var(--text); }
+.section-header small { font-size: 11px; color: var(--sub); }
+
+.radar-wrap {
+  margin: 0 20px;
+  background: var(--card); border-radius: 16px;
+  padding: 14px 16px;
+  display: flex; align-items: center; gap: 8px;
+}
+
+.ai-banner {
+  margin: 12px 20px 0;
+  background: #f0f4ff; border-radius: 14px;
+  padding: 13px 16px;
+  display: flex; align-items: center; gap: 12px;
+  cursor: pointer;
+}
+.ai-icon {
+  width: 38px; height: 38px; border-radius: 50%;
+  background: var(--grad);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 19px; flex-shrink: 0;
+}
+.ai-banner p { font-size: 12px; color: #444; line-height: 1.5; flex: 1; }
+.ai-banner strong { color: var(--text); }
+.ai-more { font-size: 11px; color: var(--blue); font-weight: 700; white-space: nowrap; }
+
+.quick-menu {
+  margin: 12px 20px 0;
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px;
+}
+.quick-item {
+  display: flex; flex-direction: column; align-items: center; gap: 6px;
+  background: var(--card); border-radius: 12px; padding: 12px 0;
+  cursor: pointer; border: none; transition: background .15s;
+}
+.quick-item:active { background: #e8eaff; }
+.quick-icon { font-size: 22px; }
+.quick-name { font-size: 10px; color: #555; font-weight: 600; }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ② 진단 결과
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.diag-summary {
+  margin: 10px 20px 0;
+  background: linear-gradient(135deg, #1e3a8a, #3b82f6);
+  border-radius: 16px; padding: 16px 18px;
+  color: #fff; display: flex; justify-content: space-between; align-items: center;
+}
+.diag-rank-badge {
+  background: rgba(255,255,255,.22); border-radius: 20px;
+  padding: 4px 12px; font-size: 13px; font-weight: 700;
+}
+.diag-scores { padding: 4px 20px 0; }
+.diag-row {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 0; border-bottom: 1px solid #f3f4f6;
+}
+.diag-row:last-child { border-bottom: none; }
+.diag-subject { font-size: 13px; color: #333; width: 80px; flex-shrink: 0; }
+.diag-bar-wrap { flex: 1; height: 7px; background: #f0f0f0; border-radius: 4px; overflow: hidden; }
+.diag-bar { height: 100%; border-radius: 4px; transition: width .6s ease; }
+.diag-pts { font-size: 13px; font-weight: 700; color: var(--text); min-width: 32px; text-align: right; }
+
+.cta-btn {
+  margin: 14px 20px 0;
+  width: calc(100% - 40px);
+  background: var(--grad); color: #fff;
+  border: none; border-radius: 12px;
+  padding: 14px; font-size: 14px; font-weight: 700;
+  cursor: pointer; display: block;
+  transition: opacity .15s;
+}
+.cta-btn:active { opacity: .85; }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ③ AI 분석 리포트
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.ai-report-intro {
+  margin: 14px 20px 0;
+  display: flex; align-items: center; gap: 14px;
+}
+.ai-bot {
+  width: 54px; height: 54px; border-radius: 50%;
+  background: var(--grad);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; flex-shrink: 0;
+}
+.ai-report-intro p { font-size: 14px; color: #333; line-height: 1.55; }
+.ai-report-intro strong { color: var(--text); font-weight: 700; }
+
+.weakness-list { padding: 14px 20px 0; display: flex; flex-direction: column; gap: 10px; }
+.weakness-item {
+  background: var(--card); border-radius: 14px;
+  padding: 14px 16px;
+  display: flex; gap: 12px; align-items: flex-start;
+}
+.w-num {
+  width: 24px; height: 24px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 12px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.w-num.c1 { background: var(--red); }
+.w-num.c2 { background: var(--orange); }
+.w-num.c3 { background: #eab308; }
+.w-info h4 { font-size: 13px; font-weight: 700; color: var(--text); }
+.w-info p { font-size: 11px; color: var(--sub); margin-top: 3px; }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ④ 수학 로드맵
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.roadmap-hero {
+  margin: 10px 20px 0;
+  background: #f0f4ff; border-radius: 14px; padding: 16px;
+}
+.roadmap-hero-label { font-size: 11px; color: var(--sub); }
+.roadmap-hero-grade { font-size: 16px; font-weight: 700; color: var(--blue); margin-top: 2px; }
+.roadmap-hero-target { font-size: 12px; color: #555; margin-top: 6px; }
+.progress-bar { margin-top: 8px; height: 6px; background: #d1d5db; border-radius: 3px; overflow: hidden; }
+.progress-fill { height: 100%; background: var(--grad); border-radius: 3px; width: 35%; }
+
+.roadmap-list { padding: 12px 20px 0; display: flex; flex-direction: column; gap: 10px; }
+.roadmap-item {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--card); border-radius: 12px; padding: 13px 14px;
+  cursor: pointer; border: none; text-align: left; width: 100%;
+}
+.roadmap-item:active { background: #e8eaff; }
+.rm-step {
+  width: 30px; height: 30px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: #fff; flex-shrink: 0;
+}
+.rm-step.s-current { background: var(--blue); }
+.rm-step.s-done { background: var(--green); }
+.rm-step.s-todo { background: #d1d5db; color: #999; }
+.rm-name { flex: 1; font-size: 13px; font-weight: 600; color: var(--text); }
+.rm-tag {
+  font-size: 10px; font-weight: 700; padding: 3px 9px; border-radius: 10px;
+}
+.rm-tag.t-current { background: #dbeafe; color: #2563eb; }
+.rm-tag.t-done { background: #d1fae5; color: #059669; }
+.rm-tag.t-todo { background: #f3f4f6; color: #9ca3af; }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ⑤ 맞춤 학습
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.tabs {
+  display: flex; margin: 10px 20px 0;
+  background: #f3f4f6; border-radius: 10px; padding: 3px;
+}
+.tab {
+  flex: 1; padding: 8px; border-radius: 8px;
+  font-size: 13px; font-weight: 600; text-align: center; cursor: pointer;
+  color: var(--sub); border: none; background: none; transition: all .15s;
+}
+.tab.active { background: #fff; color: var(--blue); box-shadow: 0 1px 4px rgba(0,0,0,.08); }
+
+.today-card {
+  margin: 12px 20px 0;
+  background: #f0f4ff; border-radius: 16px; padding: 16px;
+}
+.today-label { font-size: 11px; color: var(--sub); margin-bottom: 4px; }
+.today-title { font-size: 15px; font-weight: 700; color: var(--text); }
+.today-sub { font-size: 12px; color: var(--sub); margin-top: 2px; }
+.today-meta { display: flex; gap: 14px; margin-top: 8px; }
+.today-meta span { font-size: 11px; color: #555; }
+.today-meta strong { color: var(--blue); }
+.start-btn {
+  width: 100%; margin-top: 12px;
+  background: var(--grad); color: #fff;
+  border: none; border-radius: 10px;
+  padding: 12px; font-size: 14px; font-weight: 700; cursor: pointer;
+}
+
+.learn-list { padding: 0 20px; display: flex; flex-direction: column; gap: 8px; }
+.learn-item {
+  display: flex; align-items: center; gap: 12px;
+  background: var(--card); border-radius: 12px; padding: 12px 14px;
+  cursor: pointer; border: none; text-align: left; width: 100%;
+}
+.learn-item:active { background: #e8eaff; }
+.li-icon {
+  width: 38px; height: 38px; border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px; flex-shrink: 0;
+}
+.li-info { flex: 1; }
+.li-info h4 { font-size: 13px; font-weight: 700; color: var(--text); }
+.li-info p { font-size: 11px; color: var(--sub); margin-top: 2px; }
+.li-arrow { font-size: 16px; color: #ccc; }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ⑥ 학습지 미리보기
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.worksheet {
+  margin: 12px 20px 0;
+  background: #fff; border-radius: 16px;
+  border: 1px solid #e5e7eb; padding: 20px;
+}
+.ws-title { font-size: 16px; font-weight: 700; color: var(--text); margin-bottom: 3px; }
+.ws-sub { font-size: 12px; color: var(--sub); margin-bottom: 16px; }
+.ws-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 16px 8px; }
+.ws-problem { display: flex; align-items: center; gap: 5px; font-size: 12px; }
+.ws-num { font-size: 11px; color: #aaa; flex-shrink: 0; width: 16px; }
+.frac { display: flex; flex-direction: column; align-items: center; gap: 1px; }
+.frac-n, .frac-d { font-size: 12px; font-weight: 600; color: #333; line-height: 1.1; }
+.frac-line { width: 16px; height: 1.5px; background: #333; }
+.ws-op { font-size: 13px; color: #555; padding: 0 2px; }
+.ws-ans { width: 26px; height: 26px; border-bottom: 2px solid #333; }
+.ws-actions { margin-top: 16px; display: flex; gap: 10px; }
+.ws-btn {
+  flex: 1; padding: 11px; border-radius: 10px; border: none;
+  font-size: 13px; font-weight: 700; cursor: pointer;
+}
+.ws-btn.outline { background: #f3f4f6; color: #333; }
+.ws-btn.primary { background: var(--grad); color: #fff; }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ⑦ 학습 리포트
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.report-period {
+  margin: 12px 20px 0;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.period-text { font-size: 13px; font-weight: 600; color: #333; }
+.period-nav { display: flex; gap: 4px; }
+.period-nav button {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: var(--card); border: none; cursor: pointer; font-size: 14px;
+}
+
+.summary-cards {
+  margin: 12px 20px 0;
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px;
+}
+.summary-card {
+  background: var(--card); border-radius: 12px; padding: 12px 8px; text-align: center;
+}
+.sc-icon { font-size: 20px; margin-bottom: 4px; }
+.sc-val { font-size: 18px; font-weight: 800; color: var(--blue); }
+.sc-label { font-size: 10px; color: var(--sub); margin-top: 2px; }
+
+.report-bars { padding: 12px 20px 0; display: flex; flex-direction: column; gap: 10px; }
+.rb-row { display: flex; align-items: center; gap: 10px; }
+.rb-label { font-size: 12px; color: #555; width: 44px; flex-shrink: 0; }
+.rb-track { flex: 1; height: 10px; background: #f0f0f0; border-radius: 5px; overflow: hidden; }
+.rb-fill { height: 100%; border-radius: 5px; transition: width .7s ease; }
+.rb-val { font-size: 12px; font-weight: 700; color: var(--text); min-width: 32px; text-align: right; }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   ⑧ 마이페이지
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.my-profile-card {
+  margin: 12px 20px 0;
+  background: var(--grad); border-radius: 16px;
+  padding: 20px; color: #fff;
+  display: flex; align-items: center; gap: 14px;
+}
+.my-avatar {
+  width: 56px; height: 56px; border-radius: 50%;
+  background: rgba(255,255,255,.25);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 28px; flex-shrink: 0;
+}
+.my-name { font-size: 18px; font-weight: 700; }
+.my-grade { font-size: 12px; opacity: .85; margin-top: 2px; }
+.my-edit {
+  margin-left: auto; background: rgba(255,255,255,.2); border: none;
+  color: #fff; font-size: 11px; font-weight: 700;
+  padding: 6px 12px; border-radius: 20px; cursor: pointer;
+}
+
+.my-menu-group { margin: 14px 20px 0; }
+.my-group-label { font-size: 11px; color: var(--sub); font-weight: 700; margin-bottom: 6px; letter-spacing: .06em; }
+.my-menu-item {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 14px; background: var(--card);
+  border-radius: 12px; margin-bottom: 6px;
+  cursor: pointer; border: none; width: 100%; text-align: left;
+}
+.my-menu-item:active { background: #e8eaff; }
+.mi-icon { font-size: 18px; }
+.mi-label { flex: 1; font-size: 13px; font-weight: 600; color: var(--text); }
+.mi-arrow { font-size: 14px; color: #ccc; }
+
+/* ━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+   공통 유틸
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━ */
+.spacer { flex: 1; }
+.pb16 { padding-bottom: 16px; }
+</style>
+</head>
+<body>
+
+<div class="phone">
+  <!-- 상태바 -->
+  <div class="sbar"><div class="notch"></div></div>
+
+  <!-- 화면 스택 -->
+  <div class="screen-stack">
+
+    <!-- ══════════════ ① 홈 ══════════════ -->
+    <div class="screen active" id="s-home">
+      <div class="home-profile">
+        <div class="avatar">🧒</div>
+        <div>
+          <div class="profile-name">김유빈</div>
+          <div class="profile-grade">초등 6학년 ▾</div>
+        </div>
+        <button class="notif-btn">🔔<span class="notif-badge">3</span></button>
+      </div>
+
+      <div class="score-card" onclick="go('s-diag')">
+        <div class="score-ring">
+          <div class="score-ring-inner">
+            <span class="score-num">72</span>
+            <span class="score-unit">점</span>
+          </div>
+        </div>
+        <div>
+          <div class="score-label">전체 수학 실력</div>
+          <div class="score-rank">상위 35%</div>
+          <div class="score-link">상세 보기 ›</div>
+        </div>
+      </div>
+
+      <div class="section-header">
+        <h3>현재 나의 학습 상태</h3>
+        <small>업데이트: 오늘</small>
+      </div>
+
+      <div class="radar-wrap">
+        <svg width="148" height="148" viewBox="-12 -12 124 124">
+          <polygon points="50,4 92,27 92,73 50,96 8,73 8,27" fill="none" stroke="#e0e4ff" stroke-width="1.2"/>
+          <polygon points="50,18 80,35 80,65 50,82 20,65 20,35" fill="none" stroke="#e0e4ff" stroke-width="1.2"/>
+          <polygon points="50,32 68,41.5 68,58.5 50,68 32,58.5 32,41.5" fill="none" stroke="#e0e4ff" stroke-width="1.2"/>
+          <line x1="50" y1="4" x2="50" y2="96" stroke="#e0e4ff" stroke-width="1"/>
+          <line x1="8" y1="27" x2="92" y2="73" stroke="#e0e4ff" stroke-width="1"/>
+          <line x1="92" y1="27" x2="8" y2="73" stroke="#e0e4ff" stroke-width="1"/>
+          <!-- 연산85 도형70 함수45 프리중등40 측정65 규칙성60 -->
+          <polygon points="50,11 82,36 72,66 50,84 26,62 25,33"
+            fill="rgba(99,102,241,.2)" stroke="#6366f1" stroke-width="2"/>
+          <text x="50" y="0" text-anchor="middle" font-size="9" fill="#6366f1" font-weight="700">연산 85</text>
+          <text x="99" y="30" text-anchor="start" font-size="9" fill="#555">도형 70</text>
+          <text x="99" y="77" text-anchor="start" font-size="9" fill="#f97316">함수 45</text>
+          <text x="50" y="110" text-anchor="middle" font-size="9" fill="#ef4444">프리중등 40</text>
+          <text x="1" y="77" text-anchor="end" font-size="9" fill="#555">측정 65</text>
+          <text x="1" y="30" text-anchor="end" font-size="9" fill="#555">규칙성 60</text>
+        </svg>
+      </div>
+
+      <div class="ai-banner" onclick="go('s-ai')">
+        <div class="ai-icon">🤖</div>
+        <p>유빈이는 <strong>'비례식'</strong>과 <strong>'분수 나눗셈'</strong>의<br>개념 이해가 부족해요.</p>
+        <span class="ai-more">자세히 ›</span>
+      </div>
+
+      <div class="quick-menu">
+        <button class="quick-item" onclick="go('s-diag')">
+          <div class="quick-icon">📋</div><div class="quick-name">진단하기</div>
+        </button>
+        <button class="quick-item" onclick="go('s-learn')">
+          <div class="quick-icon">✏️</div><div class="quick-name">맞춤 학습</div>
+        </button>
+        <button class="quick-item" onclick="go('s-ws')">
+          <div class="quick-icon">🖨️</div><div class="quick-name">학습지 출력</div>
+        </button>
+        <button class="quick-item" onclick="go('s-report')">
+          <div class="quick-icon">📄</div><div class="quick-name">학습 리포트</div>
+        </button>
+      </div>
+
+      <div class="spacer"></div>
+    </div>
+
+    <!-- ══════════════ ② 진단 결과 ══════════════ -->
+    <div class="screen" id="s-diag">
+      <div class="app-bar">
+        <button class="app-bar-action back-btn" onclick="back()">‹</button>
+        <span class="app-bar-title">진단 결과</span>
+        <button class="app-bar-action">↗</button>
+      </div>
+
+      <div style="padding:10px 20px 0; display:flex; justify-content:space-between; align-items:center;">
+        <span style="font-size:14px;font-weight:700;color:var(--text);">종합 결과</span>
+        <span style="background:#dbeafe;color:#2563eb;font-size:12px;font-weight:700;padding:4px 12px;border-radius:20px;">상위 35%</span>
+      </div>
+
+      <div class="diag-scores">
+        <div class="diag-row">
+          <span class="diag-subject">정수와 유리수</span>
+          <div class="diag-bar-wrap"><div class="diag-bar" style="width:90%;background:#10b981;"></div></div>
+          <span class="diag-pts">90점</span>
+        </div>
+        <div class="diag-row">
+          <span class="diag-subject">문자와 식</span>
+          <div class="diag-bar-wrap"><div class="diag-bar" style="width:85%;background:#3b82f6;"></div></div>
+          <span class="diag-pts">85점</span>
+        </div>
+        <div class="diag-row">
+          <span class="diag-subject">일차방정식</span>
+          <div class="diag-bar-wrap"><div class="diag-bar" style="width:70%;background:#6366f1;"></div></div>
+          <span class="diag-pts">70점</span>
+        </div>
+        <div class="diag-row">
+          <span class="diag-subject">비례식</span>
+          <div class="diag-bar-wrap"><div class="diag-bar" style="width:40%;background:#f97316;"></div></div>
+          <span class="diag-pts">40점</span>
+        </div>
+        <div class="diag-row">
+          <span class="diag-subject">분수의 계산</span>
+          <div class="diag-bar-wrap"><div class="diag-bar" style="width:30%;background:#ef4444;"></div></div>
+          <span class="diag-pts">30점</span>
+        </div>
+        <div class="diag-row">
+          <span class="diag-subject">도형의 성질</span>
+          <div class="diag-bar-wrap"><div class="diag-bar" style="width:65%;background:#8b5cf6;"></div></div>
+          <span class="diag-pts">65점</span>
+        </div>
+      </div>
+
+      <button class="cta-btn" onclick="go('s-ai')">AI 분석 리포트 보기</button>
+      <div class="pb16"></div>
+    </div>
+
+    <!-- ══════════════ ③ AI 분석 리포트 ══════════════ -->
+    <div class="screen" id="s-ai">
+      <div class="app-bar">
+        <button class="app-bar-action back-btn" onclick="back()">‹</button>
+        <span class="app-bar-title">AI 분석 리포트</span>
+        <div style="width:36px;"></div>
+      </div>
+
+      <div class="ai-report-intro">
+        <div class="ai-bot">🤖</div>
+        <p>유빈이의 수학 구멍은<br>다음과 같아요.</p>
+      </div>
+
+      <div class="weakness-list">
+        <div class="weakness-item">
+          <div class="w-num c1">1</div>
+          <div class="w-info">
+            <h4>분수 나눗셈 개념 이해 부족</h4>
+            <p>기초 개념부터 다시 학습이 필요해요.</p>
+          </div>
+        </div>
+        <div class="weakness-item">
+          <div class="w-num c2">2</div>
+          <div class="w-info">
+            <h4>비례식 문제 해결 능력 부족</h4>
+            <p>비례식의 의미와 활용을 익혀요.</p>
+          </div>
+        </div>
+        <div class="weakness-item">
+          <div class="w-num c3">3</div>
+          <div class="w-info">
+            <h4>도형의 성질 응용 부족</h4>
+            <p>기본 성질은 알지만 응용이 약해요.</p>
+          </div>
+        </div>
+      </div>
+
+      <button class="cta-btn" onclick="go('s-learn')">맞춤 학습 추천 받기</button>
+      <div class="pb16"></div>
+    </div>
+
+    <!-- ══════════════ ④ 수학 로드맵 ══════════════ -->
+    <div class="screen" id="s-roadmap">
+      <div class="app-bar">
+        <div style="width:36px;"></div>
+        <span class="app-bar-title">수학 로드맵</span>
+        <button class="app-bar-action">❓</button>
+      </div>
+
+      <div class="roadmap-hero">
+        <div class="roadmap-hero-label">현재 위치</div>
+        <div class="roadmap-hero-grade">초등 6학년 2학기</div>
+        <div class="roadmap-hero-target">예상 수준: 중학교 1학년 상위 30%</div>
+        <div class="progress-bar"><div class="progress-fill"></div></div>
+      </div>
+
+      <div class="section-header">
+        <h3>추천 학습 로드맵</h3>
+      </div>
+
+      <div class="roadmap-list">
+        <button class="roadmap-item" onclick="go('s-ws')">
+          <div class="rm-step s-current">1</div>
+          <span class="rm-name">분수 나눗셈</span>
+          <span class="rm-tag t-current">이번 달</span>
+        </button>
+        <button class="roadmap-item">
+          <div class="rm-step s-done">2</div>
+          <span class="rm-name">비례식</span>
+          <span class="rm-tag t-done">학습 중</span>
+        </button>
+        <button class="roadmap-item">
+          <div class="rm-step s-todo">3</div>
+          <span class="rm-name">정비례와 반비례</span>
+          <span class="rm-tag t-todo">예정</span>
+        </button>
+        <button class="roadmap-item">
+          <div class="rm-step s-todo">4</div>
+          <span class="rm-name">일차방정식</span>
+          <span class="rm-tag t-todo">예정</span>
+        </button>
+        <button class="roadmap-item">
+          <div class="rm-step s-todo">5</div>
+          <span class="rm-name">함수의 기초</span>
+          <span class="rm-tag t-todo">예정</span>
+        </button>
+      </div>
+
+      <button class="cta-btn">전체 로드맵 보기</button>
+      <div class="pb16"></div>
+    </div>
+
+    <!-- ══════════════ ⑤ 맞춤 학습 ══════════════ -->
+    <div class="screen" id="s-learn">
+      <div class="app-bar">
+        <div style="width:36px;"></div>
+        <span class="app-bar-title">맞춤 학습</span>
+        <div style="width:36px;"></div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab active" onclick="switchTab(this,'tab-rec')">추천 학습</button>
+        <button class="tab" onclick="switchTab(this,'tab-pick')">직접 선택</button>
+      </div>
+
+      <!-- 추천 학습 탭 -->
+      <div id="tab-rec">
+        <div class="today-card">
+          <div class="today-label">오늘의 추천 학습</div>
+          <div class="today-title">분수 나눗셈 기초 다지기 1</div>
+          <div class="today-sub">개념 이해 학습지 1</div>
+          <div class="today-meta">
+            <span>문제 <strong>10개</strong></span>
+            <span>예상 <strong>15분</strong></span>
+          </div>
+          <button class="start-btn" onclick="go('s-ws')">학습 시작</button>
+        </div>
+
+        <div class="section-header"><h3>추천 학습 목록</h3></div>
+        <div class="learn-list">
+          <button class="learn-item" onclick="go('s-ws')">
+            <div class="li-icon" style="background:#e0e7ff;">📖</div>
+            <div class="li-info">
+              <h4>분수 나눗셈 기초 다지기</h4>
+              <p>개념 학습지 1–3</p>
+            </div>
+            <span class="li-arrow">›</span>
+          </button>
+          <button class="learn-item" onclick="go('s-ws')">
+            <div class="li-icon" style="background:#fce7f3;">✏️</div>
+            <div class="li-info">
+              <h4>비례식의 이해</h4>
+              <p>개념 학습지 1–2</p>
+            </div>
+            <span class="li-arrow">›</span>
+          </button>
+          <button class="learn-item" onclick="go('s-ws')">
+            <div class="li-icon" style="background:#dcfce7;">📝</div>
+            <div class="li-info">
+              <h4>비례식 활용 문제</h4>
+              <p>문장제 학습지 1–2</p>
+            </div>
+            <span class="li-arrow">›</span>
+          </button>
+        </div>
+      </div>
+
+      <!-- 직접 선택 탭 -->
+      <div id="tab-pick" style="display:none;">
+        <div style="padding:20px; text-align:center; color:var(--sub); font-size:13px;">
+          <div style="font-size:40px;margin-bottom:12px;">📚</div>
+          학년·단원을 직접 선택하세요.
+        </div>
+        <div class="learn-list">
+          <button class="learn-item"><div class="li-icon" style="background:#e0e7ff;">🔢</div><div class="li-info"><h4>수와 연산</h4><p>초등 6학년</p></div><span class="li-arrow">›</span></button>
+          <button class="learn-item"><div class="li-icon" style="background:#fce7f3;">🔠</div><div class="li-info"><h4>문자와 식</h4><p>중등 1학년</p></div><span class="li-arrow">›</span></button>
+          <button class="learn-item"><div class="li-icon" style="background:#dcfce7;">📐</div><div class="li-info"><h4>도형</h4><p>초등 6학년</p></div><span class="li-arrow">›</span></button>
+        </div>
+      </div>
+
+      <div class="pb16"></div>
+    </div>
+
+    <!-- ══════════════ ⑥ 학습지 미리보기 ══════════════ -->
+    <div class="screen" id="s-ws">
+      <div class="app-bar">
+        <button class="app-bar-action back-btn" onclick="back()">‹</button>
+        <span class="app-bar-title">학습지 미리보기</span>
+        <div style="width:36px;"></div>
+      </div>
+
+      <div class="worksheet">
+        <div class="ws-title">분수 나눗셈 기초 다지기 1</div>
+        <div class="ws-sub">다음을 계산하세요.</div>
+        <div class="ws-grid">
+          <div class="ws-problem"><span class="ws-num">①</span><div class="frac"><span class="frac-n">2</span><div class="frac-line"></div><span class="frac-d">3</span></div><span class="ws-op">÷</span><div class="frac"><span class="frac-n">4</span><div class="frac-line"></div><span class="frac-d">5</span></div><span class="ws-op">=</span><div class="ws-ans"></div></div>
+          <div class="ws-problem"><span class="ws-num">②</span><div class="frac"><span class="frac-n">3</span><div class="frac-line"></div><span class="frac-d">4</span></div><span class="ws-op">÷</span><div class="frac"><span class="frac-n">2</span><div class="frac-line"></div><span class="frac-d">7</span></div><span class="ws-op">=</span><div class="ws-ans"></div></div>
+          <div class="ws-problem"><span class="ws-num">③</span><div class="frac"><span class="frac-n">5</span><div class="frac-line"></div><span class="frac-d">6</span></div><span class="ws-op">÷</span><div class="frac"><span class="frac-n">1</span><div class="frac-line"></div><span class="frac-d">3</span></div><span class="ws-op">=</span><div class="ws-ans"></div></div>
+          <div class="ws-problem"><span class="ws-num">④</span><div class="frac"><span class="frac-n">7</span><div class="frac-line"></div><span class="frac-d">8</span></div><span class="ws-op">÷</span><div class="frac"><span class="frac-n">2</span><div class="frac-line"></div><span class="frac-d">5</span></div><span class="ws-op">=</span><div class="ws-ans"></div></div>
+          <div class="ws-problem"><span class="ws-num">⑤</span><div class="frac"><span class="frac-n">2</span><div class="frac-line"></div><span class="frac-d">5</span></div><span class="ws-op">÷</span><div class="frac"><span class="frac-n">3</span><div class="frac-line"></div><span class="frac-d">10</span></div><span class="ws-op">=</span><div class="ws-ans"></div></div>
+          <div class="ws-problem"><span class="ws-num">⑥</span><div class="frac"><span class="frac-n">4</span><div class="frac-line"></div><span class="frac-d">9</span></div><span class="ws-op">÷</span><div class="frac"><span class="frac-n">2</span><div class="frac-line"></div><span class="frac-d">3</span></div><span class="ws-op">=</span><div class="ws-ans"></div></div>
+          <div class="ws-problem"><span class="ws-num">⑦</span><div class="frac"><span class="frac-n">3</span><div class="frac-line"></div><span class="frac-d">8</span></div><span class="ws-op">÷</span><div class="frac"><span class="frac-n">1</span><div class="frac-line"></div><span class="frac-d">2</span></div><span class="ws-op">=</span><div class="ws-ans"></div></div>
+          <div class="ws-problem"><span class="ws-num">⑧</span><div class="frac"><span class="frac-n">5</span><div class="frac-line"></div><span class="frac-d">12</span></div><span class="ws-op">÷</span><div class="frac"><span class="frac-n">5</span><div class="frac-line"></div><span class="frac-d">6</span></div><span class="ws-op">=</span><div class="ws-ans"></div></div>
+        </div>
+        <div class="ws-actions">
+          <button class="ws-btn outline">PDF 저장</button>
+          <button class="ws-btn primary">인쇄하기</button>
+        </div>
+      </div>
+      <div class="pb16"></div>
+    </div>
+
+    <!-- ══════════════ ⑦ 학습 리포트 ══════════════ -->
+    <div class="screen" id="s-report">
+      <div class="app-bar">
+        <div style="width:36px;"></div>
+        <span class="app-bar-title">학습 리포트</span>
+        <div style="width:36px;"></div>
+      </div>
+
+      <div class="tabs">
+        <button class="tab active">주간 리포트</button>
+        <button class="tab">월간 리포트</button>
+      </div>
+
+      <div class="report-period">
+        <div class="period-nav"><button>‹</button></div>
+        <span class="period-text">2024.05.20 ~ 05.26</span>
+        <div class="period-nav"><button>›</button></div>
+      </div>
+
+      <div class="section-header"><h3>이번 주 학습 요약</h3></div>
+
+      <div class="summary-cards">
+        <div class="summary-card"><div class="sc-icon">📅</div><div class="sc-val">5일</div><div class="sc-label">학습일수</div></div>
+        <div class="summary-card"><div class="sc-icon">📝</div><div class="sc-val">86문제</div><div class="sc-label">학습문제</div></div>
+        <div class="summary-card"><div class="sc-icon">⏱️</div><div class="sc-val">78%</div><div class="sc-label">정답률</div></div>
+      </div>
+
+      <div class="section-header" style="margin-top:4px;"><h3>영역별 정답률</h3></div>
+
+      <div class="report-bars">
+        <div class="rb-row"><span class="rb-label">연산</span><div class="rb-track"><div class="rb-fill" style="width:85%;background:#10b981;"></div></div><span class="rb-val">85%</span></div>
+        <div class="rb-row"><span class="rb-label">문자와 식</span><div class="rb-track"><div class="rb-fill" style="width:80%;background:#3b82f6;"></div></div><span class="rb-val">80%</span></div>
+        <div class="rb-row"><span class="rb-label">도형</span><div class="rb-track"><div class="rb-fill" style="width:70%;background:#6366f1;"></div></div><span class="rb-val">70%</span></div>
+        <div class="rb-row"><span class="rb-label">측정</span><div class="rb-track"><div class="rb-fill" style="width:65%;background:#8b5cf6;"></div></div><span class="rb-val">65%</span></div>
+        <div class="rb-row"><span class="rb-label">비례식</span><div class="rb-track"><div class="rb-fill" style="width:40%;background:#f97316;"></div></div><span class="rb-val">40%</span></div>
+        <div class="rb-row"><span class="rb-label">분수</span><div class="rb-track"><div class="rb-fill" style="width:30%;background:#ef4444;"></div></div><span class="rb-val">30%</span></div>
+      </div>
+      <div class="pb16"></div>
+    </div>
+
+    <!-- ══════════════ ⑧ 마이페이지 ══════════════ -->
+    <div class="screen" id="s-my">
+      <div class="app-bar">
+        <div style="width:36px;"></div>
+        <span class="app-bar-title">마이페이지</span>
+        <div style="width:36px;"></div>
+      </div>
+
+      <div class="my-profile-card">
+        <div class="my-avatar">🧒</div>
+        <div>
+          <div class="my-name">김유빈</div>
+          <div class="my-grade">초등 6학년</div>
+        </div>
+        <button class="my-edit">편집</button>
+      </div>
+
+      <div class="my-menu-group">
+        <div class="my-group-label">학습 설정</div>
+        <button class="my-menu-item"><span class="mi-icon">👶</span><span class="mi-label">아이 프로필 관리</span><span class="mi-arrow">›</span></button>
+        <button class="my-menu-item"><span class="mi-icon">🔔</span><span class="mi-label">학습 알림 설정</span><span class="mi-arrow">›</span></button>
+        <button class="my-menu-item"><span class="mi-icon">🎯</span><span class="mi-label">학습 목표 설정</span><span class="mi-arrow">›</span></button>
+      </div>
+
+      <div class="my-menu-group">
+        <div class="my-group-label">구독 & 결제</div>
+        <button class="my-menu-item"><span class="mi-icon">👑</span><span class="mi-label">프리미엄 구독하기</span><span class="mi-arrow">›</span></button>
+        <button class="my-menu-item"><span class="mi-icon">💳</span><span class="mi-label">결제 내역</span><span class="mi-arrow">›</span></button>
+      </div>
+
+      <div class="my-menu-group">
+        <div class="my-group-label">앱 정보</div>
+        <button class="my-menu-item"><span class="mi-icon">📄</span><span class="mi-label">이용약관</span><span class="mi-arrow">›</span></button>
+        <button class="my-menu-item"><span class="mi-icon">🔒</span><span class="mi-label">개인정보처리방침</span><span class="mi-arrow">›</span></button>
+        <button class="my-menu-item"><span class="mi-icon">💬</span><span class="mi-label">고객센터</span><span class="mi-arrow">›</span></button>
+      </div>
+      <div class="pb16"></div>
+    </div>
+
+  </div><!-- /screen-stack -->
+
+  <!-- 바텀 네비 -->
+  <nav class="bottom-nav" id="bottom-nav">
+    <button class="nav-item active" onclick="navGo('s-home',this)"><div class="nav-icon">🏠</div>홈</button>
+    <button class="nav-item" onclick="navGo('s-learn',this)"><div class="nav-icon">📚</div>학습</button>
+    <button class="nav-item" onclick="navGo('s-roadmap',this)"><div class="nav-icon">🚩</div>로드맵</button>
+    <button class="nav-item" onclick="navGo('s-report',this)"><div class="nav-icon">📊</div>리포트</button>
+    <button class="nav-item" onclick="navGo('s-my',this)"><div class="nav-icon">👤</div>마이페이지</button>
+  </nav>
+</div>
+
+<script>
+// ── 화면 스택 라우터 ──────────────────────────────
+var stack = ['s-home'];   // 히스토리 스택
+var NAV_ROOTS = ['s-home','s-learn','s-roadmap','s-report','s-my'];
+
+function _getEl(id){ return document.getElementById(id); }
+
+function _activate(el){
+  el.classList.remove('back-enter');
+  el.classList.add('active');
+}
+function _deactivate(el){
+  el.classList.remove('active');
+  el.classList.add('leaving');
+  setTimeout(function(){ el.classList.remove('leaving'); }, 340);
+}
+
+// 앞으로 이동
+function go(targetId){
+  var cur = stack[stack.length - 1];
+  if(cur === targetId) return;
+  var curEl = _getEl(cur);
+  var nextEl = _getEl(targetId);
+  if(!nextEl) return;
+
+  nextEl.style.transform = 'translateX(100%)';
+  nextEl.classList.add('active');
+  // force reflow
+  nextEl.getBoundingClientRect();
+  nextEl.style.transform = '';
+
+  _deactivate(curEl);
+  stack.push(targetId);
+}
+
+// 뒤로 이동
+function back(){
+  if(stack.length <= 1) return;
+  var cur = stack.pop();
+  var prev = stack[stack.length - 1];
+  var curEl = _getEl(cur);
+  var prevEl = _getEl(prev);
+
+  prevEl.style.transform = 'translateX(-30%)';
+  prevEl.classList.add('active');
+  prevEl.getBoundingClientRect();
+  prevEl.style.transform = '';
+
+  curEl.style.transform = 'translateX(100%)';
+  curEl.classList.remove('active');
+  setTimeout(function(){ curEl.style.transform = ''; }, 340);
+}
+
+// 바텀 네비 이동 (루트 화면은 스택 초기화)
+function navGo(targetId, btn){
+  var navItems = document.querySelectorAll('.nav-item');
+  navItems.forEach(function(n){ n.classList.remove('active'); });
+  btn.classList.add('active');
+
+  var cur = stack[stack.length - 1];
+  if(cur === targetId) return;
+
+  // 현재 화면 숨기기
+  var curEl = _getEl(cur);
+  curEl.classList.remove('active');
+  curEl.classList.remove('leaving');
+
+  // 스택을 루트로 리셋
+  stack = [targetId];
+
+  var nextEl = _getEl(targetId);
+  nextEl.style.transition = 'none';
+  nextEl.style.transform = 'translateX(0)';
+  nextEl.classList.add('active');
+  setTimeout(function(){ nextEl.style.transition = ''; }, 20);
+}
+
+// ── 탭 전환 ──────────────────────────────────────
+function switchTab(btn, tabId){
+  var tabs = btn.closest('.tabs').querySelectorAll('.tab');
+  tabs.forEach(function(t){ t.classList.remove('active'); });
+  btn.classList.add('active');
+
+  // 탭 콘텐츠 토글 (tab-rec / tab-pick)
+  var rec = document.getElementById('tab-rec');
+  var pick = document.getElementById('tab-pick');
+  if(!rec || !pick) return;
+  rec.style.display = tabId === 'tab-rec' ? '' : 'none';
+  pick.style.display = tabId === 'tab-pick' ? '' : 'none';
+}
+</script>
+</body>
+</html>
