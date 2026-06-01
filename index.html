@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>K-Math Diagnostic</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;600;700;900&display=swap" rel="stylesheet">
+<style>
+* { box-sizing: border-box; margin: 0; padding: 0; }
+
+:root {
+  --bg: #F7FAF7;
+  --card: #FFFFFF;
+  --soft-green: #F0F7F1;
+  --primary: #244A36;
+  --accent: #7FB685;
+  --progress: #B8D8BA;
+  --cream: #FFF8ED;
+  --orange: #F4C27A;
+  --gray: #6C7C72;
+  --blue: #EEF6FF;
+  --purple: #F8F4FF;
+}
+
+body {
+  background: var(--bg);
+  font-family: 'Noto Sans KR', 'Apple SD Gothic Neo', Arial, sans-serif;
+  color: #1a1a1a;
+  min-height: 100vh;
+}
+
+.app {
+  display: flex;
+  min-height: 100vh;
+}
+
+/* ───────── SIDEBAR ───────── */
+.sidebar {
+  width: 272px;
+  background: var(--soft-green);
+  padding: 36px 22px 32px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  position: fixed;
+  top: 0; left: 0;
+  height: 100vh;
+  overflow-y: auto;
+  border-right: 1.5px solid #DDE9DE;
+}
+
+.logo {
+  font-size: 21px;
+  font-weight: 900;
+  color: var(--primary);
+  letter-spacing: -0.5px;
+  margin-bottom: 26px;
+  padding-left: 4px;
+}
+.logo span { color: var(--accent); }
+
+.profile-card {
+  background: var(--card);
+  border-radius: 20px;
+  padding: 16px 18px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 18px;
+  box-shadow: 0 2px 8px rgba(36,74,54,0.06);
+}
+
+.avatar {
+  width: 48px; height: 48px;
+  border-radius: 50%;
+  background: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 20px; font-weight: 700; color: white;
+  flex-shrink: 0;
+}
+
+.profile-info .pname {
+  font-size: 17px; font-weight: 700; color: var(--primary);
+}
+.profile-info .pgrade {
+  font-size: 12px; color: var(--gray); margin-top: 2px;
+}
+
+.nav-btn {
+  display: flex; align-items: center; gap: 11px;
+  padding: 13px 16px;
+  border-radius: 14px;
+  cursor: pointer;
+  font-size: 15px; font-weight: 600;
+  color: var(--primary);
+  border: none; background: transparent;
+  width: 100%; text-align: left;
+  transition: background 0.15s;
+}
+.nav-btn:hover { background: var(--progress); }
+.nav-btn.active { background: var(--primary); color: white; }
+.nav-icon { font-size: 17px; width: 22px; text-align: center; }
+
+.weekly {
+  margin-top: auto;
+  padding-top: 24px;
+  border-top: 1.5px solid #D4E6D5;
+}
+.weekly-label {
+  font-size: 14px; font-weight: 700; color: var(--primary); margin-bottom: 10px;
+}
+.prog-bar {
+  height: 9px; background: var(--progress); border-radius: 5px; overflow: hidden; margin-bottom: 7px;
+}
+.prog-fill {
+  height: 100%; background: var(--accent); border-radius: 5px;
+}
+.weekly-sub { font-size: 12px; color: var(--gray); }
+
+/* ───────── MAIN ───────── */
+.main {
+  margin-left: 272px;
+  flex: 1;
+  padding: 44px 52px;
+}
+
+.screen { display: none; }
+.screen.active { display: block; }
+
+.page-header { margin-bottom: 32px; }
+.page-header h1 {
+  font-size: 30px; font-weight: 700; color: var(--primary); letter-spacing: -0.8px;
+}
+.page-header p { font-size: 15px; color: var(--gray); margin-top: 6px; }
+
+/* ───────── CARDS ───────── */
+.card {
+  background: var(--card);
+  border-radius: 26px;
+  padding: 30px 32px;
+  box-shadow: 0 2px 12px rgba(36,74,54,0.06);
+}
+.card-title {
+  font-size: 20px; font-weight: 700; color: var(--primary); margin-bottom: 4px;
+}
+.card-sub { font-size: 14px; color: var(--gray); margin-bottom: 18px; }
+
+/* ───────── DASHBOARD ───────── */
+.dash-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 22px;
+  margin-bottom: 22px;
+}
+
+.level-card {
+  background: #F6FBF6;
+  border: 1.5px solid #E3EFE4;
+}
+.level-row { display: flex; align-items: center; gap: 24px; }
+.grade-circle {
+  width: 86px; height: 86px; border-radius: 50%;
+  background: #E5F3E6;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 34px; font-weight: 700; color: var(--primary); flex-shrink: 0;
+}
+.level-ok { font-size: 14px; color: var(--gray); margin-bottom: 3px; }
+.level-warn { font-size: 14px; color: #D9822B; font-weight: 600; }
+.level-tag {
+  font-size: 13px; font-weight: 700; color: var(--primary); margin-bottom: 8px;
+}
+
+.gap-card {
+  background: var(--cream);
+  border: 1.5px solid #F0DEC1;
+}
+.gap-card .card-title { color: #5B3B17; }
+.gap-list { list-style: none; display: flex; flex-direction: column; gap: 11px; margin-bottom: 18px; }
+.gap-item { display: flex; align-items: center; gap: 10px; font-size: 15px; color: #7A6041; }
+.gap-num {
+  width: 24px; height: 24px; border-radius: 50%;
+  background: var(--orange); color: #5B3B17;
+  font-size: 12px; font-weight: 700;
+  display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.chip-btn {
+  display: inline-flex; align-items: center;
+  background: var(--orange); color: #5B3B17;
+  font-size: 13px; font-weight: 700;
+  padding: 9px 18px; border-radius: 20px;
+  border: none; cursor: pointer;
+  transition: opacity 0.15s;
+}
+.chip-btn:hover { opacity: 0.85; }
+
+/* Skill Tree */
+.skill-tree-card { grid-column: 1 / -1; }
+.skill-tree {
+  display: flex;
+  align-items: center;
+  gap: 0;
+  overflow-x: auto;
+  padding: 8px 0 4px;
+}
+.snode { display: flex; flex-direction: column; align-items: center; gap: 7px; flex-shrink: 0; }
+.scircle {
+  width: 68px; height: 68px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 15px; font-weight: 700;
+}
+.scircle.done { background: var(--accent); color: white; }
+.scircle.warn { background: var(--orange); color: #5B3B17; }
+.scircle.lock { background: #EAEAEA; color: #888; }
+.slabel { font-size: 12px; color: var(--gray); font-weight: 500; }
+.sline {
+  width: 64px; height: 8px; border-radius: 4px; flex-shrink: 0;
+  margin-bottom: 22px;
+}
+.sline.done { background: var(--progress); }
+.sline.warn { background: #E5D0A9; }
+.sline.lock { background: #DDD; }
+
+/* Action cards */
+.action-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 18px;
+}
+.acard {
+  border-radius: 22px; padding: 26px 28px;
+  cursor: pointer;
+  transition: transform 0.15s, box-shadow 0.15s;
+}
+.acard:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(36,74,54,0.12); }
+.acard.g { background: var(--soft-green); }
+.acard.p { background: var(--purple); }
+.acard.b { background: var(--blue); }
+.aicon { font-size: 30px; margin-bottom: 12px; }
+.atitle { font-size: 18px; font-weight: 700; margin-bottom: 5px; }
+.acard.g .atitle { color: var(--primary); }
+.acard.p .atitle { color: #3F315F; }
+.acard.b .atitle { color: #254A6B; }
+.asub { font-size: 13px; color: var(--gray); }
+
+/* ───────── DIAGNOSTIC TEST ───────── */
+.test-wrap { max-width: 680px; }
+.test-header {
+  display: flex; align-items: center; gap: 16px; margin-bottom: 30px;
+}
+.t-bar {
+  flex: 1; height: 8px; background: var(--progress); border-radius: 4px; overflow: hidden;
+}
+.t-fill {
+  height: 100%; background: var(--primary); border-radius: 4px; transition: width 0.3s;
+}
+.t-count { font-size: 14px; font-weight: 600; color: var(--gray); white-space: nowrap; }
+.qcard {
+  background: var(--card); border-radius: 26px; padding: 36px;
+  box-shadow: 0 2px 16px rgba(36,74,54,0.08); margin-bottom: 18px;
+}
+.q-cat {
+  display: inline-block; background: var(--soft-green);
+  color: var(--primary); font-size: 12px; font-weight: 700;
+  padding: 5px 13px; border-radius: 20px; margin-bottom: 18px;
+}
+.q-text { font-size: 21px; font-weight: 600; color: #1a1a1a; line-height: 1.55; margin-bottom: 28px; }
+.q-opts { display: flex; flex-direction: column; gap: 10px; }
+.q-opt {
+  display: flex; align-items: center; gap: 14px;
+  padding: 15px 18px;
+  border: 2px solid #E5EDE6; border-radius: 14px;
+  cursor: pointer; font-size: 16px; color: #333;
+  transition: all 0.15s; user-select: none;
+}
+.q-opt:hover { border-color: var(--accent); background: var(--soft-green); }
+.q-opt.sel { border-color: var(--primary); background: var(--soft-green); color: var(--primary); font-weight: 600; }
+.q-num {
+  width: 30px; height: 30px; border-radius: 50%;
+  background: #EEE; display: flex; align-items: center; justify-content: center;
+  font-size: 13px; font-weight: 700; color: #555; flex-shrink: 0;
+  transition: all 0.15s;
+}
+.q-opt.sel .q-num { background: var(--primary); color: white; }
+.test-nav { display: flex; justify-content: space-between; align-items: center; }
+.btn {
+  padding: 13px 30px; border-radius: 14px; font-size: 15px; font-weight: 700;
+  border: none; cursor: pointer; transition: all 0.15s;
+}
+.btn-p { background: var(--primary); color: white; }
+.btn-p:hover { background: #1a3728; }
+.btn-s { background: #EEE; color: #666; }
+.btn-s:hover { background: #DDD; }
+
+/* ───────── GAP REPORT ───────── */
+.rep-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-bottom: 20px;
+}
+.rcard {
+  background: var(--card); border-radius: 22px; padding: 26px 28px;
+  box-shadow: 0 2px 10px rgba(36,74,54,0.05);
+}
+.rc-title { font-size: 18px; font-weight: 700; color: var(--primary); margin-bottom: 16px; }
+.brow { margin-bottom: 13px; }
+.blabel {
+  display: flex; justify-content: space-between;
+  font-size: 13px; color: var(--gray); margin-bottom: 5px;
+}
+.blabel span:last-child { font-weight: 700; color: var(--primary); }
+.btrack {
+  height: 9px; background: #EEF2EE; border-radius: 5px; overflow: hidden;
+}
+.bfill { height: 100%; border-radius: 5px; background: var(--accent); }
+.bfill.w { background: var(--orange); }
+.alert-box {
+  background: var(--cream); border: 1.5px solid #F0DEC1;
+  border-radius: 14px; padding: 13px 16px; margin-top: 10px;
+  font-size: 13px; color: #7A6041; font-weight: 600;
+}
+
+/* ───────── ROADMAP ───────── */
+.rmap { display: flex; flex-direction: column; gap: 16px; max-width: 680px; }
+.rmcard {
+  background: var(--card); border-radius: 22px; padding: 24px 28px;
+  box-shadow: 0 2px 10px rgba(36,74,54,0.05);
+}
+.rmcard.cur { border: 2px solid var(--accent); }
+.rmcard.dimmed { opacity: 0.55; }
+.rm-row { display: flex; align-items: center; gap: 18px; }
+.rm-icon {
+  width: 48px; height: 48px; border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 19px; flex-shrink: 0;
+}
+.rm-icon.done-i { background: var(--accent); }
+.rm-icon.cur-i  { background: var(--orange); }
+.rm-icon.lock-i { background: #EEE; }
+.rm-title { font-size: 17px; font-weight: 700; color: var(--primary); }
+.rm-desc  { font-size: 13px; color: var(--gray); margin-top: 3px; }
+.rm-badge {
+  font-size: 12px; font-weight: 700; padding: 6px 13px; border-radius: 12px; white-space: nowrap;
+}
+.rm-badge.done  { background: var(--soft-green); color: var(--primary); }
+.rm-badge.cur   { background: var(--orange); color: #5B3B17; }
+.rm-badge.lock  { background: #EEE; color: #777; }
+.rm-prog { margin-top: 14px; margin-left: 66px; }
+
+/* ───────── WORKSHEET ───────── */
+.ws-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.wscard {
+  background: var(--card); border-radius: 22px; padding: 28px 30px;
+  box-shadow: 0 2px 10px rgba(36,74,54,0.05);
+}
+.ws-title { font-size: 19px; font-weight: 700; color: var(--primary); margin-bottom: 4px; }
+.ws-sub { font-size: 13px; color: var(--gray); margin-bottom: 20px; }
+.ws-opts { display: flex; flex-direction: column; gap: 9px; margin-bottom: 20px; }
+.ws-opt {
+  display: flex; align-items: center; gap: 12px;
+  padding: 13px 15px; border: 2px solid #E5EDE6; border-radius: 13px;
+  cursor: pointer; font-size: 14px; color: #333; transition: all 0.15s;
+}
+.ws-opt:hover { border-color: var(--accent); background: var(--soft-green); }
+.ws-opt input { accent-color: var(--primary); width: 16px; height: 16px; }
+.ws-history { display: flex; flex-direction: column; gap: 9px; }
+.ws-row {
+  background: white; border-radius: 13px; padding: 14px 16px;
+  display: flex; justify-content: space-between; align-items: center;
+}
+.ws-row-title { font-size: 14px; font-weight: 700; color: var(--primary); }
+.ws-row-date  { font-size: 12px; color: var(--gray); margin-top: 2px; }
+.qr-btn {
+  background: var(--soft-green); color: var(--primary);
+  font-size: 12px; font-weight: 700; padding: 7px 14px; border-radius: 10px; border: none; cursor: pointer;
+}
+.stat-row {
+  display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; margin-top: 10px;
+}
+.stat-box { text-align: center; }
+.stat-num { font-size: 34px; font-weight: 700; color: var(--primary); }
+.stat-num.w { color: #D9822B; }
+.stat-lbl { font-size: 13px; color: var(--gray); margin-top: 2px; }
+
+/* ───────── RESPONSIVE ───────── */
+@media (max-width: 1100px) {
+  .dash-grid { grid-template-columns: 1fr; }
+  .action-grid { grid-template-columns: 1fr 1fr; }
+  .rep-grid { grid-template-columns: 1fr; }
+  .ws-grid { grid-template-columns: 1fr; }
+}
+@media (max-width: 768px) {
+  .sidebar { width: 100%; height: auto; position: relative; flex-direction: row; flex-wrap: wrap; }
+  .main { margin-left: 0; padding: 24px 20px; }
+  .action-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="app">
+
+<!-- ═══════════ SIDEBAR ═══════════ -->
+<aside class="sidebar">
+  <div class="logo">K-Math <span>Diagnostic</span></div>
+
+  <div class="profile-card">
+    <div class="avatar">유</div>
+    <div class="profile-info">
+      <div class="pname">유빈</div>
+      <div class="pgrade">초등 5학년 · 중1 선행 준비</div>
+    </div>
+  </div>
+
+  <button class="nav-btn active" onclick="go('dashboard',0)">
+    <span class="nav-icon">🏠</span>오늘의 진단
+  </button>
+  <button class="nav-btn" onclick="go('test',1)">
+    <span class="nav-icon">📝</span>진단 테스트
+  </button>
+  <button class="nav-btn" onclick="go('report',2)">
+    <span class="nav-icon">📊</span>수학 구멍
+  </button>
+  <button class="nav-btn" onclick="go('roadmap',3)">
+    <span class="nav-icon">🗺️</span>학습 로드맵
+  </button>
+  <button class="nav-btn" onclick="go('worksheet',4)">
+    <span class="nav-icon">🖨️</span>학습지 출력
+  </button>
+
+  <div class="weekly">
+    <div class="weekly-label">이번 주 목표</div>
+    <div class="prog-bar"><div class="prog-fill" style="width:64%"></div></div>
+    <div class="weekly-sub">진단 3회 / 복습지 2장</div>
+  </div>
+</aside>
+
+<!-- ═══════════ MAIN ═══════════ -->
+<main class="main">
+
+<!-- ─── DASHBOARD ─── -->
+<div id="s-dashboard" class="screen active">
+  <div class="page-header">
+    <h1>K-Math Diagnostic</h1>
+    <p>중학교 선행 전, 아이의 수학 구멍을 찾아주는 학습 지도</p>
+  </div>
+
+  <div class="dash-grid">
+    <!-- 현재 수학 위치 -->
+    <div class="card level-card">
+      <div class="card-title">현재 수학 위치</div>
+      <div class="card-sub">중1 선행을 시작하기 전 보완이 필요한 단원</div>
+      <div class="level-row">
+        <div class="grade-circle">B+</div>
+        <div>
+          <div class="level-tag">추천 상태</div>
+          <div class="level-ok">중1 문자와 식 진입 가능</div>
+          <div class="level-warn">단, 분수·비례식 보완 필요</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- AI 구멍 분석 -->
+    <div class="card gap-card">
+      <div class="card-title">AI 구멍 분석</div>
+      <ul class="gap-list">
+        <li class="gap-item"><div class="gap-num">①</div>분수 나눗셈 개념 부족</li>
+        <li class="gap-item"><div class="gap-num">②</div>비례식 응용 약함</li>
+        <li class="gap-item"><div class="gap-num">③</div>방정식 문장제 실수</li>
+      </ul>
+      <button class="chip-btn" onclick="go('worksheet',4)">복습지 3장 추천 →</button>
+    </div>
+
+    <!-- 스킬트리 -->
+    <div class="card skill-tree-card">
+      <div class="card-title">수학 스킬트리</div>
+      <div class="card-sub">구멍을 메우면 중학교 선행 속도가 안정됩니다.</div>
+      <div class="skill-tree">
+        <div class="snode">
+          <div class="scircle done">분수</div>
+          <span class="slabel">완료</span>
+        </div>
+        <div class="sline done"></div>
+        <div class="snode">
+          <div class="scircle warn">비례</div>
+          <span class="slabel">보완필요</span>
+        </div>
+        <div class="sline warn"></div>
+        <div class="snode">
+          <div class="scircle lock">방정식</div>
+          <span class="slabel">잠김</span>
+        </div>
+        <div class="sline lock"></div>
+        <div class="snode">
+          <div class="scircle lock">함수</div>
+          <span class="slabel">잠김</span>
+        </div>
+        <div class="sline lock"></div>
+        <div class="snode">
+          <div class="scircle lock">그래프</div>
+          <span class="slabel">잠김</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="action-grid">
+    <div class="acard g" onclick="go('test',1)">
+      <div class="aicon">📝</div>
+      <div class="atitle">진단 테스트</div>
+      <div class="asub">10분 · 20문제</div>
+    </div>
+    <div class="acard p" onclick="go('worksheet',4)">
+      <div class="aicon">📄</div>
+      <div class="atitle">맞춤 학습지</div>
+      <div class="asub">PDF 출력 / QR 채점</div>
+    </div>
+    <div class="acard b" onclick="go('report',2)">
+      <div class="aicon">📈</div>
+      <div class="atitle">부모 리포트</div>
+      <div class="asub">주간 성장 분석</div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── DIAGNOSTIC TEST ─── -->
+<div id="s-test" class="screen">
+  <div class="page-header">
+    <h1>진단 테스트</h1>
+    <p>현재 수준을 정확히 파악합니다. 아는 만큼만 풀어도 괜찮아요.</p>
+  </div>
+
+  <div class="test-wrap">
+    <div class="test-header">
+      <div class="t-bar"><div class="t-fill" id="tprog" style="width:15%"></div></div>
+      <div class="t-count" id="tcnt">3 / 20</div>
+    </div>
+
+    <div class="qcard">
+      <span class="q-cat" id="qcat">분수 나눗셈</span>
+      <div class="q-text" id="qtext">2¾ ÷ 1⅓ 를 계산하면?</div>
+      <div class="q-opts" id="qopts">
+        <div class="q-opt" onclick="sel(this)">
+          <div class="q-num">①</div>2 3/16
+        </div>
+        <div class="q-opt" onclick="sel(this)">
+          <div class="q-num">②</div>2 1/16
+        </div>
+        <div class="q-opt" onclick="sel(this)">
+          <div class="q-num">③</div>2 1/8
+        </div>
+        <div class="q-opt" onclick="sel(this)">
+          <div class="q-num">④</div>2 1/4
+        </div>
+      </div>
+    </div>
+
+    <div class="test-nav">
+      <button class="btn btn-s">← 이전</button>
+      <button class="btn btn-p" onclick="nextQ()">다음 문제 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── GAP REPORT ─── -->
+<div id="s-report" class="screen">
+  <div class="page-header">
+    <h1>수학 구멍 분석</h1>
+    <p>문제를 더 많이 푸는 것보다, 어디서 막히는지 아는 것이 먼저입니다.</p>
+  </div>
+
+  <div class="rep-grid">
+    <div class="rcard">
+      <div class="rc-title">분수 나눗셈</div>
+      <div class="brow">
+        <div class="blabel"><span>개념 이해</span><span>40%</span></div>
+        <div class="btrack"><div class="bfill w" style="width:40%"></div></div>
+      </div>
+      <div class="brow">
+        <div class="blabel"><span>계산 정확도</span><span>80%</span></div>
+        <div class="btrack"><div class="bfill" style="width:80%"></div></div>
+      </div>
+      <div class="brow">
+        <div class="blabel"><span>실수 빈도</span><span>45%</span></div>
+        <div class="btrack"><div class="bfill w" style="width:45%"></div></div>
+      </div>
+      <div class="alert-box">⚠️ 개념 이해 보완이 시급합니다.</div>
+    </div>
+
+    <div class="rcard">
+      <div class="rc-title">비율과 비례</div>
+      <div class="brow">
+        <div class="blabel"><span>개념 이해</span><span>55%</span></div>
+        <div class="btrack"><div class="bfill" style="width:55%"></div></div>
+      </div>
+      <div class="brow">
+        <div class="blabel"><span>응용 문제</span><span>35%</span></div>
+        <div class="btrack"><div class="bfill w" style="width:35%"></div></div>
+      </div>
+      <div class="alert-box">⚠️ 응용 문제 적용 능력 부족</div>
+    </div>
+
+    <div class="rcard">
+      <div class="rc-title">방정식 문장제</div>
+      <div class="brow">
+        <div class="blabel"><span>문제 이해</span><span>70%</span></div>
+        <div class="btrack"><div class="bfill" style="width:70%"></div></div>
+      </div>
+      <div class="brow">
+        <div class="blabel"><span>식 세우기</span><span>48%</span></div>
+        <div class="btrack"><div class="bfill w" style="width:48%"></div></div>
+      </div>
+      <div class="brow">
+        <div class="blabel"><span>계산 완료</span><span>62%</span></div>
+        <div class="btrack"><div class="bfill" style="width:62%"></div></div>
+      </div>
+      <div class="alert-box">⚠️ 언어→식 변환에서 자주 막힘</div>
+    </div>
+
+    <div class="rcard" style="background:var(--soft-green);border:1.5px solid #E3EFE4;">
+      <div class="rc-title">전체 요약</div>
+      <div style="font-size:46px;font-weight:700;color:var(--primary);margin:14px 0;">B+</div>
+      <div style="font-size:14px;color:var(--gray);line-height:1.65;">
+        중1 문자와 식 진입 가능<br>
+        <span style="color:#D9822B;font-weight:600;">단, 비례식 응용 보완이 필요합니다.</span>
+      </div>
+      <button class="btn btn-p" style="margin-top:20px;width:100%;" onclick="go('roadmap',3)">학습 로드맵 보기 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ─── ROADMAP ─── -->
+<div id="s-roadmap" class="screen">
+  <div class="page-header">
+    <h1>학습 로드맵</h1>
+    <p>중1 선행 진입 가능. 단, 비례식 응용 보완이 필요합니다.</p>
+  </div>
+
+  <div class="rmap">
+    <div class="rmcard">
+      <div class="rm-row">
+        <div class="rm-icon done-i">✅</div>
+        <div style="flex:1">
+          <div class="rm-title">분수와 소수</div>
+          <div class="rm-desc">분수 덧셈, 뺄셈, 곱셈 완료</div>
+        </div>
+        <span class="rm-badge done">완료</span>
+      </div>
+    </div>
+
+    <div class="rmcard cur">
+      <div class="rm-row">
+        <div class="rm-icon cur-i">⚡</div>
+        <div style="flex:1">
+          <div class="rm-title">분수 나눗셈</div>
+          <div class="rm-desc">개념 이해 40% → 80% 목표</div>
+        </div>
+        <span class="rm-badge cur">진행 중</span>
+      </div>
+      <div class="rm-prog">
+        <div class="prog-bar" style="height:8px;">
+          <div class="prog-fill" style="background:var(--orange);width:40%;"></div>
+        </div>
+        <div style="font-size:12px;color:var(--gray);margin-top:5px;">40% 달성 · 목표 80%</div>
+      </div>
+    </div>
+
+    <div class="rmcard cur">
+      <div class="rm-row">
+        <div class="rm-icon cur-i">⚡</div>
+        <div style="flex:1">
+          <div class="rm-title">비율과 비례식</div>
+          <div class="rm-desc">응용 문제 집중 훈련 필요</div>
+        </div>
+        <span class="rm-badge cur">보완 필요</span>
+      </div>
+    </div>
+
+    <div class="rmcard dimmed">
+      <div class="rm-row">
+        <div class="rm-icon lock-i">🔒</div>
+        <div style="flex:1">
+          <div class="rm-title">방정식 기초</div>
+          <div class="rm-desc">비례식 완료 후 진입 가능</div>
+        </div>
+        <span class="rm-badge lock">잠김</span>
+      </div>
+    </div>
+
+    <div class="rmcard dimmed">
+      <div class="rm-row">
+        <div class="rm-icon lock-i">🔒</div>
+        <div style="flex:1">
+          <div class="rm-title">함수와 그래프</div>
+          <div class="rm-desc">방정식 완료 후 진입 가능</div>
+        </div>
+        <span class="rm-badge lock">잠김</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ─── WORKSHEET ─── -->
+<div id="s-worksheet" class="screen">
+  <div class="page-header">
+    <h1>학습지 출력</h1>
+    <p>구멍 단원 맞춤 학습지를 생성하고 바로 출력할 수 있습니다.</p>
+  </div>
+
+  <div class="ws-grid">
+    <div class="wscard">
+      <div class="ws-title">학습지 생성</div>
+      <div class="ws-sub">출력할 단원을 선택하세요</div>
+      <div class="ws-opts">
+        <label class="ws-opt"><input type="checkbox" checked>분수 나눗셈 개념 복습 (12문제)</label>
+        <label class="ws-opt"><input type="checkbox" checked>비례식 응용 문제 (8문제)</label>
+        <label class="ws-opt"><input type="checkbox">방정식 문장제 (10문제)</label>
+        <label class="ws-opt"><input type="checkbox">오답 다시 풀기 (자동 생성)</label>
+      </div>
+      <button class="btn btn-p" style="width:100%;">PDF 생성 →</button>
+    </div>
+
+    <div class="wscard" style="background:var(--purple);">
+      <div class="ws-title" style="color:#3F315F;">최근 생성한 학습지</div>
+      <div class="ws-sub">총 3장 · QR 채점 가능</div>
+      <div class="ws-history">
+        <div class="ws-row">
+          <div>
+            <div class="ws-row-title">분수 나눗셈 복습</div>
+            <div class="ws-row-date">2025.06.01</div>
+          </div>
+          <button class="qr-btn">QR 채점</button>
+        </div>
+        <div class="ws-row">
+          <div>
+            <div class="ws-row-title">비례식 응용</div>
+            <div class="ws-row-date">2025.05.29</div>
+          </div>
+          <button class="qr-btn">QR 채점</button>
+        </div>
+        <div class="ws-row">
+          <div>
+            <div class="ws-row-title">분수 개념 기초</div>
+            <div class="ws-row-date">2025.05.25</div>
+          </div>
+          <button class="qr-btn">QR 채점</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="wscard" style="background:var(--blue);grid-column:1/-1;">
+      <div class="ws-title" style="color:#254A6B;">부모 주간 리포트</div>
+      <div class="ws-sub">이번 주 유빈이의 수학 성장 분석</div>
+      <div class="stat-row">
+        <div class="stat-box">
+          <div class="stat-num">3회</div>
+          <div class="stat-lbl">진단 완료</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num">2장</div>
+          <div class="stat-lbl">복습지 완료</div>
+        </div>
+        <div class="stat-box">
+          <div class="stat-num w">+12%</div>
+          <div class="stat-lbl">분수 성장</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+</main>
+</div>
+
+<script>
+const SCREENS = ['dashboard','test','report','roadmap','worksheet'];
+
+function go(name, idx) {
+  SCREENS.forEach(s => {
+    document.getElementById('s-'+s).classList.remove('active');
+  });
+  document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+  document.getElementById('s-'+name).classList.add('active');
+  document.querySelectorAll('.nav-btn')[idx].classList.add('active');
+  window.scrollTo(0,0);
+}
+
+function sel(el) {
+  el.closest('.q-opts').querySelectorAll('.q-opt').forEach(o => o.classList.remove('sel'));
+  el.classList.add('sel');
+}
+
+const questions = [
+  { cat:'분수 나눗셈', text:'2¾ ÷ 1⅓ 를 계산하면?',
+    opts:['2 3/16','2 1/16','2 1/8','2 1/4'], q:2, idx:1 },
+  { cat:'비례식', text:'3 : 4 = 9 : □  에서 □ 의 값은?',
+    opts:['10','12','14','16'], q:2, idx:2 },
+  { cat:'방정식', text:'x + 7 = 15 일 때, x의 값은?',
+    opts:['6','7','8','9'], q:3, idx:3 },
+  { cat:'분수 나눗셈', text:'1½ ÷ ¾ 를 계산하면?',
+    opts:['1','1½','2','2½'], q:3, idx:2 },
+  { cat:'비율', text:'전체 30명 중 18명이 수학을 좋아할 때, 비율은?',
+    opts:['3/5','2/5','3/10','6/10'], q:1, idx:1 },
+];
+
+let qIdx = 0;
+
+function renderQ() {
+  const q = questions[qIdx];
+  document.getElementById('qcat').textContent = q.cat;
+  document.getElementById('qtext').textContent = q.text;
+  const container = document.getElementById('qopts');
+  container.innerHTML = q.opts.map((o,i) =>
+    `<div class="q-opt" onclick="sel(this)"><div class="q-num">${'①②③④'[i]}</div>${o}</div>`
+  ).join('');
+  const pct = Math.round((qIdx+1) / questions.length * 100);
+  document.getElementById('tprog').style.width = pct+'%';
+  document.getElementById('tcnt').textContent = (qIdx+1)+' / '+questions.length;
+}
+
+function nextQ() {
+  qIdx = (qIdx + 1) % questions.length;
+  renderQ();
+}
+
+renderQ();
+</script>
+</body>
+</html>
